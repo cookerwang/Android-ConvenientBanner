@@ -1,11 +1,13 @@
 package com.bigkoo.convenientbannerdemo;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.bigkoo.convenientbanner.CBPageAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by Sai on 15/8/4.
@@ -23,8 +25,10 @@ public class NetworkImageHolderView implements CBPageAdapter.Holder<String>{
 
     @Override
     public void UpdateUI(Context context, int position, String data) {
-        imageView.setImageResource(R.drawable.ic_default_adimage);
-        ImageLoader.getInstance().displayImage(data,imageView);
+        Log.i("test", "data: " + data);
+        Picasso.with(context)
+                .load(data)
+                .into(imageView);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

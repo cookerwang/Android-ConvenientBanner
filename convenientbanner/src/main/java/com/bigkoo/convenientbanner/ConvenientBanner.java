@@ -1,20 +1,23 @@
 package com.bigkoo.convenientbanner;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.PageTransformer;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 页面翻转控件
@@ -24,7 +27,7 @@ import android.widget.LinearLayout;
 public class ConvenientBanner<T> extends LinearLayout {
     private CBViewHolderCreator holderCreator;
     private List<T> mDatas;
-    private int[] page_indicatorId;
+    private int[] page_indicatorId = {R.drawable.icon_page_indicator_normal, R.drawable.icon_page_indicator_focused};
     private ArrayList<ImageView> mPointViews = new ArrayList<ImageView>();
     private CBPageChangeListener pageChangeListener;
     private CBPageAdapter pageAdapter;
@@ -33,6 +36,19 @@ public class ConvenientBanner<T> extends LinearLayout {
     private long autoTurningTime;
     private boolean turning;
     private boolean canTurn = false;
+
+    private static final float ASPECT_RATIO_DEFAULT_VALUE = -1;
+    private float cbAspectRatio = ASPECT_RATIO_DEFAULT_VALUE;
+    private int cbIndicatorMarginLeft = 0;
+    private int cbIndicatorMarginBottom = 0;
+    private int cbIndicatorMarginRight = 0;
+    private int cbIndicatorMarginTop = 0;
+
+    private static final int LEFT = 0;
+    private static final int CENTER = 1;
+    private static final int RIGHT = 2;
+    private static final int INDICATOR_GRAVITY_DEFAULT_VALUE = CENTER;
+    private int cbIndicatorGravity = INDICATOR_GRAVITY_DEFAULT_VALUE;
 
     public enum Transformer {
         DefaultTransformer("DefaultTransformer"), AccordionTransformer(
@@ -74,16 +90,45 @@ public class ConvenientBanner<T> extends LinearLayout {
     };
 
     public ConvenientBanner(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
+    }
+
+    public ConvenientBanner(Context context, AttributeSet attrs, int defStyleRes) {
+        super(context, attrs, defStyleRes);
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ConvenientBanner, 0, defStyleRes);
+        cbAspectRatio = a.getFloat(R.styleable.ConvenientBanner_cb_aspect_ratio, ASPECT_RATIO_DEFAULT_VALUE);
+        cbIndicatorGravity = a.getInteger(R.styleable.ConvenientBanner_cb_indicator_gravity, INDICATOR_GRAVITY_DEFAULT_VALUE);
+        switch( cbIndicatorGravity ) {
+            case LEFT :
+                cbIndicatorGravity = Gravity.LEFT;
+                break;
+            case CENTER:
+                cbIndicatorGravity = Gravity.CENTER_HORIZONTAL;
+                break;
+            case RIGHT:
+                cbIndicatorGravity = Gravity.RIGHT;
+                break;
+        }
+        cbIndicatorGravity = cbIndicatorGravity | Gravity.BOTTOM;
+        int margin = a.getDimensionPixelSize(R.styleable.ConvenientBanner_cb_indicator_margin, 0);
+        cbIndicatorMarginBottom = a.getDimensionPixelSize(R.styleable.ConvenientBanner_cb_indicator_margin_bottom, margin);
+        cbIndicatorMarginTop = a.getDimensionPixelSize(R.styleable.ConvenientBanner_cb_indicator_margin_top, margin);
+        cbIndicatorMarginLeft = a.getDimensionPixelSize(R.styleable.ConvenientBanner_cb_indicator_margin_left, margin);
+        cbIndicatorMarginRight = a.getDimensionPixelSize(R.styleable.ConvenientBanner_cb_indicator_margin_right, margin);
+        a.recycle();
         init(context);
     }
 
     private void init(Context context) {
-        View hView = LayoutInflater.from(context).inflate(
-                R.layout.include_viewpager, this, true);
+        View hView = LayoutInflater.from(context).inflate(R.layout.include_viewpager, this, true);
         viewPager = (CBLoopViewPager) hView.findViewById(R.id.cbLoopViewPager);
-        loPageTurningPoint = (ViewGroup) hView
-                .findViewById(R.id.loPageTurningPoint);
+        loPageTurningPoint = (ViewGroup) hView.findViewById(R.id.loPageTurningPoint);
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) loPageTurningPoint.getLayoutParams();
+        layoutParams.gravity = cbIndicatorGravity;
+        layoutParams.leftMargin = cbIndicatorMarginLeft;
+        layoutParams.rightMargin = cbIndicatorMarginRight;
+        layoutParams.topMargin = cbIndicatorMarginTop;
+        layoutParams.bottomMargin = cbIndicatorMarginBottom;
         initViewPagerScroll();
     }
 
@@ -96,6 +141,18 @@ public class ConvenientBanner<T> extends LinearLayout {
         if (page_indicatorId != null)
             setPageIndicator(page_indicatorId);
         return this;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if( cbAspectRatio > 0 ) {
+            int width = getMeasuredWidth();
+            int height = (int)(width * cbAspectRatio);
+            setMeasuredDimension(width, height);
+            super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.getMode(widthMeasureSpec)),
+                             MeasureSpec.makeMeasureSpec(height, MeasureSpec.getMode(heightMeasureSpec)));
+        }
     }
 
     /**
@@ -167,13 +224,9 @@ public class ConvenientBanner<T> extends LinearLayout {
      */
     public ConvenientBanner setPageTransformer(Transformer transformer) {
         try {
-            viewPager
-                    .setPageTransformer(
+            viewPager.setPageTransformer(
                             true,
-                            (PageTransformer) Class.forName(
-                                    "com.bigkoo.convenientbanner.transforms."
-                                            + transformer.getClassName())
-                                    .newInstance());
+                            (PageTransformer) Class.forName("com.bigkoo.convenientbanner.transforms." + transformer.getClassName()).newInstance());
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

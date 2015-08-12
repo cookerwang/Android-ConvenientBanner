@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ConvenientBanner">
+        <attr name="cb_aspect_ratio" format="float"/>
+        <attr name="cb_indicator_gravity">
+            <enum name="left" value="0"/>
+            <enum name="center" value="1"/>
+            <enum name="right" value="2"/>
+        </attr>
+        <attr name="cb_indicator_margin_left" format="dimension"/>
+        <attr name="cb_indicator_margin_right" format="dimension"/>
+        <attr name="cb_indicator_margin_bottom" format="dimension"/>
+        <attr name="cb_indicator_margin_top" format="dimension"/>
+        <attr name="cb_indicator_margin" format="dimension"/>
+    </declare-styleable>
+</resources>

@@ -1,7 +1,7 @@
 package com.bigkoo.convenientbannerdemo;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -10,11 +10,6 @@ import android.widget.ListView;
 import com.bigkoo.convenientbanner.CBViewHolderCreator;
 import com.bigkoo.convenientbanner.ConvenientBanner;
 import com.bigkoo.convenientbanner.ConvenientBanner.Transformer;
-import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
-import com.nostra13.universalimageloader.core.assist.QueueProcessingType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -25,7 +20,7 @@ import java.util.List;
  * Created by Sai on 15/7/30.
  * convenientbanner 控件 的 demo
  */
-public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     private ConvenientBanner convenientBanner;//顶部广告栏控件
     private ArrayList<Integer> localImages = new ArrayList<Integer>();
     private List<String> networkImages;
@@ -59,20 +54,20 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     }
 
     private void init(){
-        initImageLoader();
         loadTestDatas();
+
         //本地图片例子
         convenientBanner.setPages(
-                new CBViewHolderCreator<LocalImageHolderView>() {
+                new CBViewHolderCreator<NetworkImageHolderView>() {
                     @Override
-                    public LocalImageHolderView createHolder() {
-                        return new LocalImageHolderView();
+                    public NetworkImageHolderView createHolder() {
+                        return new NetworkImageHolderView();
                     }
-                }, localImages)
+                }, Arrays.asList(images))
                 //设置两个点图片作为翻页指示器，不设置则没有指示器，可以根据自己需求自行配合自己的指示器,不需要圆点指示器可用不设
-                .setPageIndicator(new int[]{R.drawable.ic_page_indicator, R.drawable.ic_page_indicator_focused})
+                //.setPageIndicator(new int[]{R.drawable.icon_page_indicator_normal, R.drawable.icon_page_indicator_focused})
                 //设置翻页的效果，不需要翻页效果可用不设
-                .setPageTransformer(Transformer.DefaultTransformer);
+                .setPageTransformer(Transformer.CubeOutTransformer);
 
 
 
@@ -87,23 +82,8 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 //        },networkImages);
     }
 
-    //初始化网络图片缓存库
-    private void initImageLoader(){
-        //网络图片例子,结合常用的图片缓存库UIL,你可以根据自己需求自己换其他网络图片库
-        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder().
-                showImageForEmptyUri(R.drawable.ic_default_adimage)
-                .cacheInMemory(true).cacheOnDisk(true).build();
-
-        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(
-                getApplicationContext()).defaultDisplayImageOptions(defaultOptions)
-                .threadPriority(Thread.NORM_PRIORITY - 2)
-                .denyCacheImageMultipleSizesInMemory()
-                .diskCacheFileNameGenerator(new Md5FileNameGenerator())
-                .tasksProcessingOrder(QueueProcessingType.LIFO).build();
-        ImageLoader.getInstance().init(config);
-    }
     /*
-    加入测试Views
+    *加入测试Views
     * */
     private void loadTestDatas() {
         //本地图片集合

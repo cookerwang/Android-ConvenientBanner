@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,6 +8,10 @@
     <com.bigkoo.convenientbanner.ConvenientBanner
         android:id="@+id/convenientBanner"
         android:layout_width="match_parent"
+        app:cb_aspect_ratio="0.5"
+        app:cb_indicator_gravity="right"
+        app:cb_indicator_margin_bottom="10dp"
+        app:cb_indicator_margin_right="10dp"
         android:layout_height="200dp"/>
     <ListView
         android:id="@+id/listView"
